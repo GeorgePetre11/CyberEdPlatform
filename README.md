@@ -53,85 +53,148 @@
 
 ## Design Patterns Implementation
 
-This project implements **five non-trivial design patterns** to ensure maintainability, scalability, and adherence to SOLID principles. Each pattern directly addresses specific project requirements and offers clear advantages over simpler alternatives.
+This project implements **six design patterns** to ensure maintainability, scalability, and adherence to software engineering best practices.
 
-### 1. Repository Pattern
+### 1. Facade Pattern 
 
-**Implementation**: `CourseRepository.java`, `UserRepository.java`, `ForumPostRepository.java`, `ForumCommentRepository.java`, `ChallengeRepository.java`, `PurchaseRepository.java`
+**Implementation**: `CartService.java`
 
-**Purpose**: Abstracts data access layer from business logic, providing a collection-like interface for domain objects.
+**Purpose**: Provides a simplified interface for cart operations, hiding the complexity of working with repositories and data transformations.
 
-**Project-Specific Problem Solved**:
-The platform requires complex queries across multiple entities (courses with enrollments, forum posts with comments, user purchase history). Without Repository Pattern, every controller and service would contain repetitive database access code using JPA's EntityManager, creating tight coupling to the persistence mechanism.
+**Key Methods**:
+- `getItems()` - Returns course-to-quantity mapping
+- `add(Long courseId)` - Adds course to cart
+- `remove(Long courseId)` - Removes course from cart
+- `getTotalPrice()` - Calculates total cart value
+- `clear()` - Empties the cart
 
-**Why Not Simpler Alternatives?**
-- **Direct EntityManager Usage**: Would require writing `entityManager.persist()`, `entityManager.find()`, `createQuery()` repeatedly in every service class. Repository Pattern provides these operations automatically through `save()`, `findById()`, `findAll()`.
-- **Traditional DAO Pattern**: Requires implementing concrete classes with boilerplate CRUD code. Spring Data JPA repositories eliminate this through interface-based programming—a single interface declaration provides complete CRUD functionality.
-- **Testability Advantage**: Repositories are easily mocked without database connections, crucial for testing forum moderation logic and course purchase workflows.
+**Why This Pattern?**
+Without the Facade pattern, controllers would need to directly interact with repositories, handle Map operations, perform stream transformations, and calculate totals. The Facade simplifies these operations into clean, intuitive methods that hide the underlying complexity.
 
----
-
-### 2. Model-View-Controller (MVC) Pattern
-
-**Implementation**: Controllers (`CourseController.java`, `ForumController.java`), Models (`Course.java`, `User.java`), Views (Thymeleaf templates)
-
-**Purpose**: Separates presentation, business logic, and data into distinct components.
-
-**Project-Specific Problem Solved**:
-The platform serves multiple user roles (admins managing courses, users browsing/purchasing, forum participants) with different UI needs. Without MVC, HTML generation, business rules, and data access would be intertwined in servlet code, making it impossible to change the UI without modifying business logic or add role-specific views.
-
-**Why Not Simpler Alternatives?**
-- **Page Controller Pattern**: Each URL would need its own controller class, leading to code duplication for authentication checks, cart management, and error handling across dozens of endpoints.
-- **Transaction Script**: Would result in procedural code handling each request from start to finish, making it impossible to reuse business logic (e.g., course enrollment validation) across web interface and future REST API.
-- **Parallel Development**: Frontend developers can iterate on Thymeleaf templates (forum UI, course catalog) while backend developers implement challenge scoring and purchase processing independently.
+**Benefits**:
+- Controllers use simple methods like `cart.add(id)` instead of complex repository and map operations
+- Easy to modify implementation (e.g., add Redis caching) without affecting client code
+- Improves testability by mocking a single service instead of multiple subsystems
 
 ---
 
-### 3. Dependency Injection (DI) Pattern
+### 2. Strategy Pattern 
 
-**Implementation**: All `@Service`, `@Controller`, `@Repository` classes; `SecurityConfig.java`; `CartAdvice.java`
+**Implementation**: `SecurityConfig.java` - `passwordEncoder()` method
 
-**Purpose**: Inverts control of object creation, allowing Spring IoC container to manage dependencies and lifecycles.
+**Purpose**: Uses `PasswordEncoder` interface with BCrypt strategy for password hashing. The encoding algorithm can be easily swapped without modifying client code.
 
-**Project-Specific Problem Solved**:
-The platform has complex dependencies: controllers need repositories, security configuration needs UserDetailsService, cart service needs course repository, forum controllers need authentication. Manual instantiation would create rigid coupling and prevent configuration changes (e.g., switching to caching repository implementations).
+**Current Strategy**: `BCryptPasswordEncoder`
 
-**Why Not Simpler Alternatives?**
-- **Service Locator Pattern**: Hides dependencies—code calling `ServiceLocator.get(CourseRepository.class)` doesn't declare what it needs, making dependency tracking impossible and breaking compile-time safety.
-- **Manual Factory Pattern**: Requires writing factory classes for every service and managing singleton lifecycles manually, leading to hundreds of lines of boilerplate and potential thread-safety bugs.
-- **Constructor Injection Advantage**: Dependencies are explicit and immutable, enabling compile-time validation and easy unit testing with mocks.
+**Alternative Strategies Available**:
+- `Argon2PasswordEncoder` - Memory-hard algorithm resistant to GPU attacks
+- `SCryptPasswordEncoder` - CPU and memory intensive
+- `Pbkdf2PasswordEncoder` - PBKDF2 with HMAC-SHA algorithm
+
+**Why This Pattern?**
+Password hashing requirements evolve (e.g., transitioning from BCrypt to Argon2). Strategy pattern allows changing the hashing algorithm by modifying a single line of code while all authentication code using `PasswordEncoder` interface remains unchanged.
+
+**Benefits**:
+- Security upgrades don't require code changes throughout the application
+- Can support multiple encoders during migration periods
+- Easy to test with mock/no-op encoders in unit tests
 
 ---
 
-### 4. Template Method Pattern
+### 3. Observer Pattern 
+
+**Implementation**: `Purchase.java` and `Course.java` with `@CreationTimestamp` annotation
+
+**Purpose**: Entities observe their own lifecycle events and automatically set timestamps when persisted to the database.
+
+**Pattern Elements**:
+- **Subject**: JPA/Hibernate EntityManager
+- **Observer**: `@CreationTimestamp` annotation processor
+- **Event**: Entity persist/insert operation
+- **Notification**: Automatic timestamp population
+
+**Why This Pattern?**
+Without Observer pattern, every service creating purchases or courses would need manual timestamp code: `purchase.setPurchasedAt(Instant.now())`. This is error-prone and creates duplication. Observer pattern ensures timestamps are set automatically and consistently.
+
+**Benefits**:
+- Eliminates boilerplate timestamp code in services
+- Guarantees consistent timestamp behavior across all entity operations
+- Timestamps are set by database transaction time, not application time (more accurate)
+
+---
+
+### 4. Factory Method Pattern 
+
+**Implementation**: `CybersecurityPlatformApplication.java` - `@Bean` methods
+
+**Factory Methods**:
+- `createAdmin()` - Creates admin user with predefined roles and credentials
+- `seedCourses()` - Creates initial course catalog
+- `seedChallenges()` - Creates cybersecurity challenge instances
+
+**Purpose**: Encapsulates object creation logic with specific initialization requirements, ensuring consistent object configuration.
+
+**Why This Pattern?**
+Creating an admin user requires: checking existence, setting username, encoding password, assigning ROLE_ADMIN, and persisting. Without Factory Method, this logic would be scattered across multiple classes or duplicated. The pattern centralizes creation logic and runs it automatically at startup.
+
+**Benefits**:
+- Single point of truth for object creation logic
+- Easy to modify initialization (e.g., add email notifications for new admins)
+- Testable in isolation from application startup
+- Spring ensures factories run in correct order with proper dependency injection
+
+---
+
+### 5. Template Method Pattern 
 
 **Implementation**: `CustomUserDetailsService.java` implementing `UserDetailsService`
 
-**Purpose**: Defines authentication algorithm skeleton while allowing custom user-loading implementation.
+**Purpose**: Defines the algorithm skeleton for loading user details during authentication, while allowing customization of specific steps.
 
-**Project-Specific Problem Solved**:
-Spring Security handles authentication flow (credential validation, session creation, security context management), but user data storage is application-specific (database, LDAP, OAuth). The platform stores users in MariaDB with custom Role enum. Template Method allows implementing only the user-loading step while inheriting the complete authentication framework.
+**Template Algorithm** (provided by Spring Security):
+1. Extract username from login request
+2. **Call `loadUserByUsername(username)`** ← Custom implementation
+3. Compare passwords
+4. Check authorities/roles
+5. Create authentication token
+6. Store in security context
 
-**Why Not Simpler Alternatives?**
-- **Strategy Pattern**: Would allow swapping entire authentication algorithms, but we only need to customize user-loading—the authentication flow (validate password, create token, establish session) remains constant.
-- **Direct Implementation**: Writing authentication from scratch would require handling password hashing, CSRF tokens, session fixation protection, remember-me functionality—hundreds of lines prone to security vulnerabilities.
-- **Framework Integration**: Spring Security automatically calls `loadUserByUsername()` during login, password resets, and session validation.
+**Our Custom Implementation**:
+- Load user from database via `UserRepository`
+- Convert custom `Role` enum to Spring Security authorities
+- Return `UserDetails` object
+
+**Why This Pattern?**
+Authentication flow is complex (password validation, session management, CSRF protection, remember-me). Template Method lets us customize only user-loading while inheriting the entire secure authentication framework. Writing this from scratch would require hundreds of lines and risk security vulnerabilities.
+
+**Benefits**:
+- Leverage Spring Security's battle-tested authentication without reimplementing it
+- Can extend for different user sources (LDAP, OAuth2) by implementing same template
+- Framework handles security concerns automatically
 
 ---
 
-### 5. Front Controller Pattern
+### 6. Singleton Pattern  (Implicit via Spring)
 
-**Implementation**: Spring Boot's `DispatcherServlet` (auto-configured), all `@Controller` classes, `SecurityConfig.java`
+**Implementation**: All `@Service`, `@Configuration`, `@Controller` classes
 
-**Purpose**: Provides single entry point for all HTTP requests, enabling centralized request processing.
+**Singleton Beans**:
+- `CustomUserDetailsService` - One instance handles all authentication requests
+- `SecurityConfig` - Single configuration instance
+- All controllers - Same instance handles all HTTP requests (thread-safe)
 
-**Project-Specific Problem Solved**:
-The platform has cross-cutting concerns affecting all endpoints: authentication (login required for cart/forum), authorization (admin-only course management), cart display in navigation, CSRF protection, exception handling. Without Front Controller, these would be duplicated across separate servlets for courses, forum, challenges, and admin panels.
+**Exception**: `CartService` is `@SessionScope` (one instance per user session, not a singleton)
 
-**Why Not Simpler Alternatives?**
-- **Traditional Servlet Mapping**: Each feature (courses, forum, challenges) would need separate servlets with duplicate authentication filters, error handlers, and logging code. Adding global features (e.g., audit logging) would require modifying every servlet.
-- **Page Controller**: Individual controllers without centralized dispatch cannot share pre/post-processing logic. The `CartAdvice` class making `CartService` available to all views would be impossible.
-- **Aspect-Oriented Features**: `@ControllerAdvice` enables global exception handling and model attributes executed before every controller method.
+**Purpose**: Spring IoC Container manages beans as singletons by default, ensuring single instances throughout application lifecycle.
+
+**Why This Pattern?**
+Creating new service instances for every request would waste memory and lose stateful data. Singletons ensure efficient resource usage and consistent state. Spring provides this automatically without requiring explicit singleton implementation (no private constructors or `getInstance()` methods).
+
+**Benefits**:
+- Memory efficient - one instance serves all requests
+- Thread-safe concurrent access managed by Spring
+- Easy dependency injection - Spring manages instance lifecycle
+- Simplifies configuration - no manual instance management
 
 ---
 ## SOLID Principles Adherence
