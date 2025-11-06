@@ -1,21 +1,7 @@
-// DESIGN PATTERN: OBSERVER PATTERN
-// Location: src/main/java/org/example/cybersecurity_platform/model/Course.java
-//
-// Description: Uses JPA/Hibernate's @CreationTimestamp annotation which implements
-// the Observer pattern. The annotation observes entity lifecycle events and automatically
-// sets the timestamp when the entity is created.
-//
-// Pattern Elements:
-// - Subject: JPA/Hibernate EntityManager
-// - Observer: @CreationTimestamp annotation processor
-// - Event: Entity persist/insert event
-// - Notification: Automatic timestamp setting
-
-package org.example.cybersecurity_platform.model;
+package org.CyberEdPlatform.patterns.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 
 @Entity
@@ -38,23 +24,10 @@ public class Course {
     @Column(nullable = false)
     private int quantity;
 
-    /**
-     * OBSERVER PATTERN: @CreationTimestamp observes entity lifecycle
-     * 
-     * This field is automatically populated when the Course entity is first
-     * persisted to the database. The developer never needs to set this value
-     * manually - the JPA/Hibernate observer mechanism handles it.
-     * 
-     * This demonstrates the Observer pattern where:
-     * - The EntityManager is the Subject
-     * - @CreationTimestamp annotation marks this field to be observed
-     * - When entity is persisted (event), timestamp is set (notification)
-     */
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    // --- Constructors ---
     public Course() {}
 
     public Course(String title, String description, double price, int quantity) {
@@ -62,10 +35,8 @@ public class Course {
         this.description = description;
         this.price = price;
         this.quantity = quantity;
-        // Note: createdAt is NOT set here - the Observer pattern handles it
     }
 
-    // --- Getters & Setters ---
     public Long getId() {
         return id;
     }
@@ -109,6 +80,4 @@ public class Course {
     public Instant getCreatedAt() {
         return createdAt;
     }
-
-    // No setter for createdAt - managed by @CreationTimestamp observer
 }
