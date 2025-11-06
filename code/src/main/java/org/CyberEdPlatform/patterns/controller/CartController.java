@@ -2,6 +2,7 @@ package org.CyberEdPlatform.patterns.controller;
 
 import org.CyberEdPlatform.patterns.model.Purchase;
 import org.CyberEdPlatform.patterns.model.User;
+import org.CyberEdPlatform.patterns.repository.CourseRepository;
 import org.CyberEdPlatform.patterns.repository.PurchaseRepository;
 import org.CyberEdPlatform.patterns.repository.UserRepository;
 import org.CyberEdPlatform.patterns.service.CartService;
@@ -18,13 +19,16 @@ public class CartController {
     private final CartService cartService;
     private final PurchaseRepository purchaseRepository;
     private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
 
     public CartController(CartService cartService, 
                          PurchaseRepository purchaseRepository,
-                         UserRepository userRepository) {
+                         UserRepository userRepository,
+                         CourseRepository courseRepository) {
         this.cartService = cartService;
         this.purchaseRepository = purchaseRepository;
         this.userRepository = userRepository;
+        this.courseRepository = courseRepository;
         System.out.println("[SINGLETON] CartController instance created");
         System.out.println("   -> Injected CartService (FACADE) - Session-scoped");
     }
@@ -71,6 +75,7 @@ public class CartController {
             }
             
             course.setQuantity(course.getQuantity() - qty);
+            courseRepository.save(course);
         });
 
         System.out.println("[FACADE] Using CartService.clear() to empty cart");
