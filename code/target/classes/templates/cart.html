@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Shopping Cart - CyberEdPlatform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        nav {
+            background: #fff;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        nav h1 { color: #333; font-size: 1.3rem; font-weight: 600; }
+        nav a {
+            color: #555;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+        nav a:hover { background: #f5f5f5; color: #000; }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        h2 { color: #333; margin-bottom: 1.5rem; font-weight: 600; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: #fafafa;
+            color: #333;
+            font-weight: 600;
+        }
+        .remove-btn {
+            background: #c00;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .remove-btn:hover { background: #a00; }
+        .summary {
+            background: #fafafa;
+            padding: 1.5rem;
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        .summary-row strong {
+            color: #333;
+        }
+        .checkout-btn {
+            width: 100%;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 2px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .checkout-btn:hover { background: #000; }
+        .empty-cart {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+        .empty-cart a {
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .facade-note {
+            background: #fafafa;
+            padding: 1rem;
+            border-radius: 2px;
+            margin-top: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1><a th:href="@{/}" style="color: #333; text-decoration: none;">CyberEdPlatform</a></h1>
+        <div>
+            <a th:href="@{/courses}">Courses</a>
+            <a th:href="@{/}">Home</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Your Shopping Cart</h2>
+        
+        <div th:if="${cartService.isEmpty}" class="empty-cart">
+            <h3>Your cart is empty</h3>
+            <p>Browse our <a th:href="@{/courses}">course catalog</a> to add items.</p>
+            
+            <div class="facade-note">
+                <strong>Facade Pattern:</strong> Even checking if cart is empty uses <code>cartService.isEmpty()</code> 
+                - a simple facade method that hides the internal Map complexity
+            </div>
+        </div>
+        
+        <div th:unless="${cartService.isEmpty}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${cartItems}">
+                        <td><strong th:text="${entry.key.title}">Course Title</strong></td>
+                        <td>$<span th:text="${entry.key.price}">0.00</span></td>
+                        <td th:text="${entry.value}">1</td>
+                        <td>$<span th:text="${entry.key.price * entry.value}">0.00</span></td>
+                        <td>
+                            <form th:action="@{/cart/remove/{id}(id=${entry.key.id})}" method="post">
+                                <button type="submit" class="remove-btn">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="summary">
+                <div class="summary-row">
+                    <span>Total Items:</span>
+                    <strong th:text="${cartService.totalItems}">0</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Total Price:</span>
+                    <strong>$<span th:text="${#numbers.formatDecimal(cartService.totalPrice, 1, 'COMMA', 2, 'POINT')}">0.00</span></strong>
+                </div>
+            </div>
+            
+            <form th:action="@{/cart/checkout}" method="post">
+                <button type="submit" class="checkout-btn">
+                    Checkout - Observer Pattern will auto-set Purchase timestamps
+                </button>
+            </form>
+            
+            <div class="facade-note">
+                <strong>Facade Pattern in Full Action</strong>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem; color: #555;">
+                    <li><code>cartService.isEmpty</code> - Simple check (hides Map operations)</li>
+                    <li><code>cartService.getItems()</code> - Returns Course objects (hides ID→Course transformation)</li>
+                    <li><code>cartService.getTotalItems()</code> - Calculates total (hides stream operations)</li>
+                    <li><code>cartService.getTotalPrice()</code> - Sums prices (hides complex calculations)</li>
+                    <li><code>cartService.remove()</code> - Removes item (hides Map manipulation)</li>
+                    <li><code>cartService.clear()</code> - Empties cart (called after checkout)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
