@@ -14,13 +14,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Set;
 
 @SpringBootApplication
-public class DesignPatternsDemoApplication {
+public class CyberEdPlatformApplication {
 
     public static void main(String[] args) {
         System.out.println("============================================================");
-        System.out.println("       Design Patterns Demo Application Starting...        ");
+        System.out.println("       CyberEdPlatformApplication Starting...        ");
         System.out.println("============================================================");
-        SpringApplication.run(DesignPatternsDemoApplication.class, args);
+        SpringApplication.run(CyberEdPlatformApplication.class, args);
         System.out.println("\nApplication started successfully!");
         System.out.println("Visit: http://localhost:8080");
         System.out.println("Login with: admin / demo123\n");
