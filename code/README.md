@@ -20,7 +20,7 @@ Part of the CyberEdPlatform project, where the only code present is to present t
 ### Running the Application
 
 ```bash
-cd design-patterns-demo
+cd CyberEdPlatform
 mvn clean install
 mvn spring-boot:run
 ```
@@ -52,7 +52,7 @@ The application will start on `http://localhost:8080`
 ### 4. Factory Method Pattern (@Bean methods)
 - Check application startup logs
 - See: "Created default admin", "Seeded 3 courses"
-- Factory methods in `DesignPatternsDemoApplication.java`
+- Factory methods in `CyberEdPlatformApplication.java`
 
 ### 5. Template Method Pattern (CustomUserDetailsService)
 - Login at `/login`
@@ -67,9 +67,9 @@ The application will start on `http://localhost:8080`
 ## Project Structure
 
 ```
-design-patterns-demo/
-├── src/main/java/org/example/patterns/
-│   ├── DesignPatternsDemoApplication.java  (Factory Method)
+CyberEdPlatform/
+├── src/main/java/org/CyberEdPlatform/patterns/
+│   ├── CyberEdPlatformApplication.java  (Factory Method)
 │   ├── model/
 │   │   ├── User.java
 │   │   ├── Course.java                      (Observer Pattern)
