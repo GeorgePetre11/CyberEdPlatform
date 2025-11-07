@@ -1,6 +1,6 @@
-# Design Patterns Demo Project
+# CyberEdPlatform Project
 
-This is a standalone Spring Boot application demonstrating **6 Design Patterns** extracted from the Cybersecurity Learning Platform.
+Part of the CyberEdPlatform project, where the only code present is to present the 6 design patterns used.
 
 ## Design Patterns Demonstrated
 
@@ -103,19 +103,11 @@ design-patterns-demo/
 
 ## Key Features
 
-- ✅ Simplified version focusing only on design patterns
-- ✅ Uses H2 in-memory database (no external DB needed)
-- ✅ All 6 patterns fully functional and demonstrable
-- ✅ Minimal UI for testing each pattern
-- ✅ Automatic data seeding at startup
-- ✅ Complete authentication and authorization
+- Simplified version focusing only on design patterns
+- Uses H2 in-memory database (no external DB needed)
+- All 6 patterns fully functional and demonstrable
+- Minimal UI for testing each pattern
+- Automatic data seeding at startup
+- Complete authentication and authorization
 
-## Educational Notes
 
-Each pattern is clearly documented in the code with comments explaining:
-- **What** the pattern does
-- **Why** it's used
-- **How** it works
-- **Benefits** it provides
-
-Look for `// PATTERN:` comments throughout the codebase.
