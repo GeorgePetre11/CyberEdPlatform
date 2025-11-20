@@ -530,13 +530,3 @@ Based on comprehensive analysis of CyberEd Platform's current requirements, team
 
 The monolithic architecture delivers the right balance of simplicity, performance, and cost-effectiveness for CyberEd Platform's current phase, allowing the team to focus on delivering value rather than managing infrastructure complexity.
 
-
----
-
-## References
-
-- [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [Event-Driven Architecture Patterns](https://martinfowler.com/articles/201701-event-driven.html)
-- [Microservices Patterns by Chris Richardson](https://microservices.io/patterns/)
-- [Building Event-Driven Microservices by Adam Bellemare](https://www.oreilly.com/library/view/building-event-driven-microservices/9781492057888/)
