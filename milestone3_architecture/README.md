@@ -448,7 +448,6 @@ Event-driven architecture is not suitable for CyberEd Platform's current needs:
 - Team capacity: 3 developers lack distributed systems expertise
 - Consistency needs: Core features require ACID transactions
 - Cost: $8,000/month vs $55/month for monolithic (145x more expensive)
-- Feature fit: 80% of features need strong consistency, only 20% benefit from async
 
 **Future Consideration**
 
