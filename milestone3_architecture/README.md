@@ -12,37 +12,12 @@
 
 ## Table of Contents
 
-1. [Project Overview](#project-overview)
-2. [Architecture 1: Monolithic Architecture](#architecture-1-monolithic-architecture)
-3. [Architecture 2: Microservices Architecture](#architecture-2-microservices-architecture)
-4. [Architecture 3: Event-Driven Architecture](#architecture-3-event-driven-architecture)
-5. [Architecture Comparison](#architecture-comparison)
-6. [Recommendation](#recommendation)
+1. [Architecture 1: Monolithic Architecture](#architecture-1-monolithic-architecture)
+2. [Architecture 2: Microservices Architecture](#architecture-2-microservices-architecture)
+3. [Architecture 3: Event-Driven Architecture](#architecture-3-event-driven-architecture)
+4. [Architecture Comparison](#architecture-comparison)
+5. [Recommendation](#recommendation)
 
----
-
-## Project Overview
-
-### CyberEd Platform
-
-The **CyberEd Platform** is a comprehensive web-based educational system for cybersecurity learning with the following core features:
-
-**Core Functionalities:**
-- Course Management System
-- Interactive Challenge System
-- E-Commerce and Shopping Cart
-- Community Forum
-- User Management and Authentication
-- Administrative Dashboard
-
-**Technical Stack:**
-- Backend: Spring Boot 3.4.5, Spring Security 6, Spring Data JPA
-- Frontend: Thymeleaf
-- Database: MariaDB 11
-- Containerization: Docker
-- Build Tool: Maven
-
----
 
 ## Architecture 1: Monolithic Architecture
 
@@ -548,7 +523,3 @@ Event-driven becomes viable when:
 - [Event-Driven Architecture Patterns](https://martinfowler.com/articles/201701-event-driven.html)
 - [Microservices Patterns by Chris Richardson](https://microservices.io/patterns/)
 - [Building Event-Driven Microservices by Adam Bellemare](https://www.oreilly.com/library/view/building-event-driven-microservices/9781492057888/)
-
----
-
-**Last Updated:** November 20, 2025
