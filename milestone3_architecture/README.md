@@ -52,36 +52,36 @@ All layers execute within the same monolithic process, making internal calls lig
 
 ### Advantages
 
-Simple to Develop and Maintain in Early Stages
+Simple to Develop and Maintain in Early Stages - 
 A single codebase allows developers to work without the complexity of distributed systems or remote service coordination.
 
-Straightforward Deployment Pipeline
+Straightforward Deployment Pipeline - 
 One application artifact (JAR/Docker image) is deployed at once, reducing operational overhead.
 
-Highly Efficient Internal Communication
+Highly Efficient Internal Communication - 
 All components call each other using in-process method calls—faster than network-based communication.
 
-Unified Data Model
+Unified Data Model - 
 The entire application shares one schema and transaction boundary, eliminating data consistency issues across services.
 
-Easier for Small Teams
+Easier for Small Teams - 
 A monolith lowers architectural overhead and is manageable even with limited development resources.
 
 ### Disadvantages
 
-Limited Scalability Options
+Limited Scalability Options - 
 Scaling requires replicating the entire application instance, even if only one component (e.g., challenges or forum) needs more capacity.
 
-Tight Coupling Between Modules
+Tight Coupling Between Modules - 
 Changes in one area can indirectly affect others, making large-scale modifications more error-prone.
 
-Slower Build and Deployment Times as the System Grows
+Slower Build and Deployment Times as the System Grows - 
 As the codebase expands, compiling, testing, and deploying the entire monolith becomes increasingly time-consuming.
 
-Reduced Fault Isolation
+Reduced Fault Isolation - 
 A failure in one module (e.g., a bug in the shop system) can impact the entire application runtime.
 
-Harder to Adopt New Technologies
+Harder to Adopt New Technologies - 
 Rewriting one part of the system in a different language or framework requires modifying the entire monolith.
 
 ### Suitability for CyberEd Platform
