@@ -1,0 +1,89 @@
+@startuml Event-Driven Architecture - Component Diagram
+
+!theme plain
+skinparam componentStyle rectangle
+
+title CyberEd Platform - Event-Driven Architecture\nComponent Diagram
+
+
+actor "User" as user
+
+rectangle "API Gateway" as gateway #F5F5F5
+
+package "Event Producers" {
+    [User Service] as userSvc
+    [Course Service] as courseSvc
+    [Payment Service] as paySvc
+    [Challenge Service] as chalSvc
+    [Forum Service] as forumSvc
+}
+
+package "Event Broker" {
+    queue "user.events" as userQ
+    queue "course.events" as courseQ
+    queue "payment.events" as payQ
+    queue "challenge.events" as chalQ
+    queue "forum.events" as forumQ
+    
+    [Apache Kafka\n(3 Brokers)] as kafka
+}
+
+package "Event Consumers" {
+    [Notification\nProcessor] as notifProc
+    [Inventory\nProcessor] as invProc
+    [Analytics\nProcessor] as analyProc
+    [Recommendation\nProcessor] as recProc
+    [Audit\nProcessor] as auditProc
+}
+
+database "User DB\n(PostgreSQL)" as userDB
+database "Course DB\n(PostgreSQL)" as courseDB
+database "Payment DB\n(PostgreSQL)" as payDB
+database "Challenge DB\n(MongoDB)" as chalDB
+database "Forum DB\n(PostgreSQL)" as forumDB
+
+database "Notification DB\n(MongoDB)" as notifDB
+database "Inventory DB\n(PostgreSQL)" as invDB
+database "Analytics DB\n(ClickHouse)" as analyDB
+database "Recommendation DB\n(PostgreSQL)" as recDB
+database "Audit DB\n(PostgreSQL)" as auditDB
+
+user --> gateway : HTTPS
+
+gateway --> userSvc
+gateway --> courseSvc
+gateway --> paySvc
+gateway --> chalSvc
+gateway --> forumSvc
+
+userSvc --> userDB : CRUD
+courseSvc --> courseDB : CRUD
+paySvc --> payDB : CRUD
+chalSvc --> chalDB : CRUD
+forumSvc --> forumDB : CRUD
+
+userSvc -right-> userQ : Publish
+courseSvc -right-> courseQ : Publish
+paySvc -right-> payQ : Publish
+chalSvc -right-> chalQ : Publish
+forumSvc -right-> forumQ : Publish
+
+userQ --> kafka
+courseQ --> kafka
+payQ --> kafka
+chalQ --> kafka
+forumQ --> kafka
+
+kafka --> notifProc : Subscribe
+kafka --> invProc : Subscribe
+kafka --> analyProc : Subscribe
+kafka --> recProc : Subscribe
+kafka --> auditProc : Subscribe
+
+notifProc --> notifDB : Log
+invProc --> invDB : Update
+analyProc --> analyDB : Store
+recProc --> recDB : Store
+auditProc --> auditDB : Append
+
+@enduml

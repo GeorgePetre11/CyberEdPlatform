@@ -1,0 +1,92 @@
+@startuml Event-Driven Architecture - Deployment Diagram
+
+!theme plain
+
+title CyberEd Platform - Event-Driven Architecture\nDeployment Diagram
+
+node "Client Browser" as client
+
+cloud "AWS Cloud" {
+    
+    node "<<Load Balancer>>\nAWS ALB" as alb
+    
+    rectangle "Kubernetes Cluster (EKS)" as k8s {
+        
+        node "API Gateway\nPod (3 replicas)" as gwPod
+        
+        rectangle "Producer Pods" as producers {
+            node "User Service\nPod (3)" as userPod
+            node "Course Service\nPod (5)" as coursePod
+            node "Payment Service\nPod (3)" as payPod
+            node "Challenge Service\nPod (2-10)" as chalPod
+            node "Forum Service\nPod (2)" as forumPod
+        }
+        
+        rectangle "Consumer Pods" as consumers {
+            node "Notification\nProcessor (5)" as notifPod
+            node "Inventory\nProcessor (2)" as invPod
+            node "Analytics\nProcessor (3)" as analyPod
+            node "Recommendation\nProcessor (2)" as recPod
+            node "Audit\nProcessor (2)" as auditPod
+        }
+    }
+    
+    rectangle "Kafka Cluster (MSK)" as kafkaCluster {
+        node "Kafka Broker 1\n(m5.xlarge)" as kb1
+        node "Kafka Broker 2\n(m5.xlarge)" as kb2
+        node "Kafka Broker 3\n(m5.xlarge)" as kb3
+        node "Zookeeper\nEnsemble" as zk
+    }
+    
+    rectangle "Database Cluster" as dbs {
+        database "RDS PostgreSQL\n(5 instances)" as rds
+        database "MongoDB Atlas\n(2 clusters)" as mongo
+        database "ClickHouse\n(Analytics)" as clickhouse
+        database "ElastiCache Redis\n(Cache)" as redis
+    }
+}
+
+cloud "External Services" {
+    [AWS SES\n(Email)] as ses
+    [Stripe\n(Payment)] as stripe
+}
+
+client --> alb : HTTPS
+
+alb --> gwPod
+
+gwPod --> userPod
+gwPod --> coursePod
+gwPod --> payPod
+gwPod --> chalPod
+gwPod --> forumPod
+
+userPod --> rds
+coursePod --> rds
+payPod --> rds
+forumPod --> rds
+chalPod --> mongo
+
+producers --> kafkaCluster : Publish Events
+
+kafkaCluster --> consumers : Consume Events
+
+notifPod --> mongo
+invPod --> rds
+analyPod --> clickhouse
+analyPod --> redis
+recPod --> rds
+auditPod --> rds
+
+notifPod --> ses : Send Emails
+payPod --> stripe : Process Payments
+
+kb1 <--> kb2 : Replicate
+kb2 <--> kb3 : Replicate
+kb1 <--> kb3 : Replicate
+
+kb1 --> zk : Coordinate
+kb2 --> zk
+kb3 --> zk
+
+@enduml
