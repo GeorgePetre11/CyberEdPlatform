@@ -68,15 +68,12 @@ All layers execute within the same monolithic process, making internal calls lig
 
 ### Component Diagram
 
-<!-- Insert monolithic component diagram here -->
 
-![Monolithic Component Diagram](diagrams/monolithic-component.png)
+![Monolithic Component Diagram](diagrams/Monolithic-Component.png)
 
 ### Deployment Diagram
 
-<!-- Insert monolithic deployment diagram here -->
-
-![Monolithic Deployment Diagram](diagrams/monolithic-deployment.png)
+![Monolithic Deployment Diagram](diagrams/Monolithic-Deployment.png)
 
 ### Advantages
 
