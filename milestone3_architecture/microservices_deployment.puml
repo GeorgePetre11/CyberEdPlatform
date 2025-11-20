@@ -1,0 +1,87 @@
+@startuml Microservices_Deployment_Diagram
+!theme plain
+skinparam linetype ortho
+skinparam rectangleBorderColor #333333
+skinparam nodesep 150
+skinparam ranksep 120
+
+title Microservices Deployment Diagram
+
+rectangle "API Gateway Service" {
+  rectangle "HTTP API" as GWAPI
+  rectangle "Auth Filter" as AuthFilter
+}
+
+rectangle "User Service" {
+  rectangle "HTTP API" as UserAPI
+  rectangle "UserProcessor" as UserProc
+}
+
+rectangle "Course Service" {
+  rectangle "HTTP API" as CourseAPI
+  rectangle "CourseProcessor" as CourseProc
+}
+
+rectangle "Shopping Service" {
+  rectangle "HTTP API" as ShopAPI
+  rectangle "CheckoutProcessor" as ShopProc
+}
+
+rectangle "Challenge Service" {
+  rectangle "HTTP API" as ChalAPI
+  rectangle "QuizEngine" as QuizEng
+}
+
+rectangle "Forum Service" {
+  rectangle "HTTP API" as ForumAPI
+  rectangle "ForumProcessor" as ForumProc
+}
+
+cloud "Message Queue\n(e.g. RabbitMQ)" as MQ
+
+database "User DB" as UserDB
+database "Course DB" as CourseDB
+database "Purchase DB" as PurchaseDB
+database "Cart Cache\n(Redis)" as CartCache
+database "Challenge DB" as ChalDB
+database "Forum DB" as ForumDB
+
+' Flow from Gateway
+GWAPI --> UserAPI : handle HTTP requests
+GWAPI --> CourseAPI : handle HTTP requests
+GWAPI --> ShopAPI : handle HTTP requests
+GWAPI --> ChalAPI : handle HTTP requests
+GWAPI --> ForumAPI : handle HTTP requests
+
+' User Service flow
+UserAPI --> UserProc : dispatch commands
+UserProc --> MQ : publish domain events\n(USER_REGISTERED)
+UserProc --> UserDB : store users
+
+' Course Service flow
+CourseAPI --> CourseProc : dispatch commands
+CourseProc --> CourseDB : store courses
+
+' Shopping Service flow
+ShopAPI --> ShopProc : dispatch commands
+ShopProc --> UserAPI : REST/gRPC\navailability/suggest
+ShopProc --> CourseAPI : get course info
+ShopProc --> MQ : publish domain events\n(PURCHASE_CREATED)
+ShopProc --> PurchaseDB : store purchases
+ShopProc --> CartCache : cart sessions
+
+' Challenge Service flow
+ChalAPI --> QuizEng : dispatch commands
+QuizEng --> ChalDB : store challenges
+
+' Forum Service flow
+ForumAPI --> ForumProc : dispatch commands
+ForumProc --> UserAPI : get user info
+ForumProc --> MQ : publish domain events\n(POST_CREATED)
+ForumProc --> ForumDB : store posts + comments
+
+' Message Queue subscriptions
+MQ --> UserProc : subscribe domain events\n(PURCHASE_*)
+MQ --> ForumProc : subscribe domain events\n(USER_*)
+
+@enduml

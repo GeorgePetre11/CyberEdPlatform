@@ -1,0 +1,85 @@
+@startuml Microservices_Component_Diagram
+!theme plain
+skinparam linetype ortho
+skinparam rectangleBorderColor #333333
+
+title Microservices Component Diagram
+
+rectangle "API Controller\n(POST /users, /courses, ...)" as APIController
+
+rectangle "AuthBus" as AuthBus
+rectangle "ServiceBus" as ServiceBus
+
+rectangle "UserRepository" as UserRepo
+rectangle "CourseRepository" as CourseRepo
+rectangle "PurchaseRepository" as PurchaseRepo
+rectangle "ChallengeRepository" as ChalRepo
+rectangle "ForumRepository" as ForumRepo
+
+cloud "MessageQueue\n(ReservationEvents)" as MQ
+
+rectangle "UserService" as UserService
+rectangle "CourseService" as CourseService
+rectangle "CheckoutService" as CheckoutService
+rectangle "ChallengeService" as ChalService
+rectangle "ForumService" as ForumService
+
+rectangle "NotificationListener" as NotifListener
+rectangle "NotificationSender" as NotifSender
+
+database "IUserRepository" as IUserRepo
+database "ICourseRepository" as ICourseRepo
+database "IPurchaseRepository" as IPurchaseRepo
+database "ISchedulingAPI" as ISchedAPI
+database "IChallengeRepository" as IChalRepo
+database "IForumRepository" as IForumRepo
+database "NotificationRepository" as NotifRepo
+
+' API Controller flow
+APIController --> AuthBus : dispatch(login)
+APIController --> ServiceBus : dispatch(command)
+
+' ServiceBus interactions
+ServiceBus --> UserService : execute()
+ServiceBus --> CourseService : execute()
+ServiceBus --> CheckoutService : call use-case
+ServiceBus --> ChalService : execute()
+ServiceBus --> ForumService : execute()
+
+' Service to Repository
+UserService ..> UserRepo : store command + status
+UserRepo ..> IUserRepo
+
+CourseService ..> CourseRepo : store course
+CourseRepo ..> ICourseRepo
+
+CheckoutService ..> PurchaseRepo : store purchase
+PurchaseRepo ..> IPurchaseRepo
+
+ChalService ..> ChalRepo : store challenge
+ChalRepo ..> IChalRepo
+
+ForumService ..> ForumRepo : store post
+ForumRepo ..> IForumRepo
+
+' Message Queue publishing
+CheckoutService ..> MQ : publish PURCHASE_*
+ForumService ..> MQ : publish POST_*
+UserService ..> MQ : publish USER_*
+
+' Message Queue subscription
+MQ ..> NotifListener : subscribe PURCHASE_*
+NotifListener ..> NotifSender : send()
+NotifSender --> NotifRepo : log notification
+
+' Scheduling (Challenge)
+ChalService --> ISchedAPI : GET /availability, POST /suggest
+
+' Forum calling User
+ForumService ..> UserService : get user info
+
+' Checkout calling Course + User
+CheckoutService ..> CourseService : call availability/suggest
+CheckoutService ..> UserService : validate user
+
+@enduml

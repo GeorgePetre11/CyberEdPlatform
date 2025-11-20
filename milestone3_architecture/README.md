@@ -84,35 +84,187 @@ The **CyberEd Platform** is a comprehensive web-based educational system for cyb
 
 ### Overview
 
-<!-- Add microservices architecture overview here -->
+Microservices Architecture is a distributed system pattern where the application is decomposed into small, independently deployable services that communicate over the network. Each service owns its data and is responsible for a specific business capability.
+
+Key components:
+- API Gateway: Single entry point for all client requests
+- Independent Services: User, Course, Shopping, Challenge, Forum services
+- Message Queue: RabbitMQ for asynchronous event-driven communication
+- Service-specific Databases: Each service has its own database
 
 ### Structure
 
-<!-- Describe the service decomposition and communication patterns -->
+#### Core Services
+
+**User Service**
+- Responsibilities: User registration, authentication, profile management
+- API: POST /users, GET /users/{id}, PUT /users/{id}
+- Database: User DB (PostgreSQL)
+- Events Published: USER_REGISTERED, USER_UPDATED
+
+**Course Service**
+- Responsibilities: Course catalog, course management, inventory
+- API: POST /courses, GET /courses, PUT /courses/{id}
+- Database: Course DB (PostgreSQL)
+- Dependencies: None (standalone service)
+
+**Shopping Service**
+- Responsibilities: Shopping cart, checkout, purchase processing
+- API: POST /cart/items, POST /checkout, GET /purchases
+- Database: Purchase DB (PostgreSQL), Cart Cache (Redis)
+- Events Published: PURCHASE_CREATED, PURCHASE_COMPLETED
+- Dependencies: Calls User Service and Course Service via REST/gRPC
+
+**Challenge Service**
+- Responsibilities: Interactive challenges, quiz engine, submissions
+- API: POST /challenges, POST /submissions, GET /challenges/{id}
+- Database: Challenge DB (MongoDB)
+- Components: QuizEngine for challenge execution
+
+**Forum Service**
+- Responsibilities: Community posts, comments, moderation
+- API: POST /posts, POST /comments, GET /posts
+- Database: Forum DB (PostgreSQL)
+- Events Published: POST_CREATED, COMMENT_ADDED
+- Events Subscribed: USER_* (to sync user data)
+- Dependencies: Calls User Service for user information
+
+#### API Gateway
+
+- Single entry point for all client requests
+- Authentication filter for security
+- Routes requests to appropriate microservices
+- Load balancing and rate limiting
+
+#### Message Queue (RabbitMQ)
+
+- Asynchronous communication between services
+- Event topics: USER_*, PURCHASE_*, POST_*
+- Decouples services for better fault tolerance
+- Enables eventual consistency
+
+#### Communication Patterns
+
+**Synchronous Communication (REST/gRPC)**
+- Shopping Service → User Service (validate user)
+- Shopping Service → Course Service (get course info, check availability)
+- Forum Service → User Service (get user profile)
+
+**Asynchronous Communication (Message Queue)**
+- User Service publishes USER_REGISTERED events
+- Shopping Service publishes PURCHASE_* events
+- Forum Service publishes POST_* events
+- Services subscribe to relevant events for data synchronization
 
 ### Component Diagram
 
-<!-- Insert microservices component diagram here -->
-
-![Microservices Component Diagram](diagrams/microservices-component.png)
+![Microservices Component Diagram](diagrams/microservice_component.png)
 
 ### Deployment Diagram
 
-<!-- Insert microservices deployment diagram here -->
-
-![Microservices Deployment Diagram](diagrams/microservices-deployment.png)
+![Microservices Deployment Diagram](diagrams/microservices_deployment.png)
 
 ### Advantages
 
-<!-- List microservices architecture advantages -->
+**Independent Scalability**
+- Each service scales independently based on load
+- Challenge Service can scale during peak quiz times
+- Shopping Service scales during sales periods
+- Optimized resource utilization
+
+**Technology Flexibility**
+- Challenge Service uses MongoDB for flexible schema
+- Other services use PostgreSQL for relational data
+- Redis for high-performance cart caching
+- Choose best tool for each job
+
+**Independent Deployment**
+- Deploy services without affecting others
+- Faster release cycles (weekly vs monthly)
+- Reduced deployment risk
+- Easy rollback of individual services
+
+**Team Autonomy**
+- Teams own services end-to-end
+- Parallel development possible
+- Clear service boundaries
+- Reduced coordination overhead
+
+**Fault Isolation**
+- Failure in Forum Service doesn't crash Shopping
+- Circuit breakers prevent cascading failures
+- Graceful degradation possible
+- Better overall system resilience
+
+**Focused Codebase**
+- Smaller, more maintainable codebases per service
+- Easier to understand and modify
+- Faster onboarding for new developers
+- Reduced cognitive load
 
 ### Disadvantages
 
-<!-- List microservices architecture disadvantages -->
+**Increased Operational Complexity**
+- 6+ services to deploy and monitor
+- Requires container orchestration (Kubernetes)
+- Complex logging and tracing across services
+- Need for dedicated DevOps expertise
+
+**Network Latency**
+- Service-to-service communication adds overhead
+- Shopping cart checkout: 3 network calls (User → Course → Purchase)
+- Response time: 200-400ms vs 50-100ms for monolithic
+- Network failures must be handled
+
+**Data Consistency Challenges**
+- No distributed transactions across services
+- Eventual consistency model required
+- Complex saga patterns for multi-service operations
+- Difficult to maintain referential integrity
+
+**Testing Complexity**
+- Integration testing requires all services running
+- Complex test data setup across multiple databases
+- End-to-end tests are fragile and slow
+- Mocking service dependencies is error-prone
+
+**Infrastructure Costs**
+- Minimum 6 services + API Gateway + Message Queue
+- Estimated cost: $500-800/month vs $55/month monolithic
+- Requires Kubernetes cluster or managed container service
+- 10-15x more expensive at small scale
+
+**Development Overhead**
+- Boilerplate code for each service (API, auth, logging)
+- Service discovery and configuration management
+- API versioning and backward compatibility
+- Distributed debugging is difficult
+
+**Distributed System Complexity**
+- Network partitions and timeouts
+- Idempotency requirements for retry logic
+- Distributed tracing needed for debugging
+- CAP theorem tradeoffs
 
 ### Suitability for CyberEd Platform
 
-<!-- Analyze how well microservices architecture fits the project -->
+**Not Recommended for Current Stage**
+
+While microservices architecture offers clear benefits such as independent scalability, fault isolation, and technology flexibility, the disadvantages significantly outweigh the advantages at CyberEd Platform's current scale:
+
+- Current user base (100-1,000 users) doesn't justify the 10x infrastructure cost increase ($500-800/month vs $55/month)
+- Team of 3 developers is insufficient to manage and maintain 6+ independent services
+- Operational complexity (Kubernetes, distributed tracing, service orchestration) exceeds team capacity
+- Shopping Service's need for strong consistency conflicts with distributed data management
+- Network latency overhead (200-400ms) vs monolithic (50-100ms) degrades user experience at small scale
+
+**Future Consideration**
+
+Microservices becomes a viable and recommended architecture when:
+- User base grows to 2,000+ concurrent users requiring independent service scaling
+- Team expands to 6+ developers with microservices and distributed systems expertise
+- Budget can support the increased infrastructure and operational costs
+- Specific services (e.g., Challenge Service) need independent scaling for competitions or peak loads
 
 ---
 
