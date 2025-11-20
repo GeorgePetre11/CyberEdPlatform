@@ -48,11 +48,23 @@ The **CyberEd Platform** is a comprehensive web-based educational system for cyb
 
 ### Overview
 
-<!-- Add monolithic architecture overview here -->
+In a monolithic architecture, the entire application is built, packaged, and deployed as a single, unified codebase. All functional modules—such as course management, challenges, e-commerce, authentication, and forum logic—are implemented inside one application runtime and share the same memory space, framework stack, and deployment lifecycle.
+For the CyberEd Platform, this means that the presentation layer, business logic, and data access components all reside within a single Spring Boot application, delivered as one executable JAR (or one Docker image). This architecture emphasizes simplicity, coherence, and ease of initial development while relying on a straightforward deployment pipeline.
 
 ### Structure
 
-<!-- Describe the layered structure: Presentation, Business Logic, Data Access -->
+The monolithic system follows a traditional layered architecture, where responsibilities are cleanly separated into logical tiers:
+
+   -Presentation Layer (Thymeleaf MVC Controllers)
+    Handles HTTP requests, renders server-side views, manages session state, and provides the UI endpoints used by students, instructors, and administrators.
+
+   -Business Logic Layer (Spring Services)
+    Contains the core domain logic for courses, challenges, e-commerce operations, forums, user management, and administrative functions. Services coordinate workflows, enforce validation rules, and connect the UI with the data access components.
+
+   -Data Access Layer (Spring Data JPA)
+    Represents repositories that abstract database operations. Each repository maps directly to a specific domain aggregate (courses, challenges, users, orders, etc.) and uses JPA/Hibernate to interact with the MariaDB relational database.
+
+All layers execute within the same monolithic process, making internal calls lightweight and eliminating the overhead of inter-service communication.
 
 ### Component Diagram
 
@@ -68,15 +80,51 @@ The **CyberEd Platform** is a comprehensive web-based educational system for cyb
 
 ### Advantages
 
-<!-- List monolithic architecture advantages -->
+Simple to Develop and Maintain in Early Stages
+A single codebase allows developers to work without the complexity of distributed systems or remote service coordination.
+
+Straightforward Deployment Pipeline
+One application artifact (JAR/Docker image) is deployed at once, reducing operational overhead.
+
+Highly Efficient Internal Communication
+All components call each other using in-process method calls—faster than network-based communication.
+
+Unified Data Model
+The entire application shares one schema and transaction boundary, eliminating data consistency issues across services.
+
+Easier for Small Teams
+A monolith lowers architectural overhead and is manageable even with limited development resources.
 
 ### Disadvantages
 
-<!-- List monolithic architecture disadvantages -->
+Limited Scalability Options
+Scaling requires replicating the entire application instance, even if only one component (e.g., challenges or forum) needs more capacity.
+
+Tight Coupling Between Modules
+Changes in one area can indirectly affect others, making large-scale modifications more error-prone.
+
+Slower Build and Deployment Times as the System Grows
+As the codebase expands, compiling, testing, and deploying the entire monolith becomes increasingly time-consuming.
+
+Reduced Fault Isolation
+A failure in one module (e.g., a bug in the shop system) can impact the entire application runtime.
+
+Harder to Adopt New Technologies
+Rewriting one part of the system in a different language or framework requires modifying the entire monolith.
 
 ### Suitability for CyberEd Platform
 
-<!-- Analyze how well monolithic architecture fits the project -->
+The monolithic architecture is well-suited for early-stage development of the CyberEd Platform, especially given the integrated nature of the system:
+
+   -The project requires tight interaction between components such as authentication, courses, challenges, and user profiles—all of which communicate efficiently under a monolithic model.
+
+   -The platform is being built by a relatively small team and benefits from the reduced operational overhead of a single deployable application.
+
+   -Early development iterations are simplified: feature updates, refactoring, and testing occur within one codebase.
+
+However, as CyberEd grows and its real-world usage increases, the monolith may encounter challenges—particularly in scalability and modular independence. In later stages, the system could migrate to a service-based or microservices architecture, separating heavily-used modules (challenges, course delivery, storefront) to enable independent scaling.
+
+For the current development phase, the monolithic architecture provides an optimal balance between simplicity, performance, and productivity.
 
 ---
 
