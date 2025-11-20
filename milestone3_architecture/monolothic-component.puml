@@ -1,0 +1,123 @@
+@startuml
+title CyberEd Platform - Architecture 1: Monolithic Component Diagram
+
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam nodesep 50
+skinparam ranksep 50
+
+left to right direction
+
+' ===== ACTORS =====
+actor "Student" as Student
+actor "Instructor" as Instructor
+actor "Administrator" as Admin
+
+' ===== MONOLITHIC SYSTEM =====
+node "CyberEd Monolithic Application\n(Spring Boot 3 + Thymeleaf)" as Monolith {
+
+  ' --- UI LAYER ---
+  package "Presentation Layer\n(Thymeleaf MVC Controllers)" as UI {
+    component "Course UI"        as UI_Course
+    component "Challenge UI"     as UI_Challenge
+    component "Shop & Cart UI"   as UI_Shop
+    component "Forum UI"         as UI_Forum
+    component "Auth UI"          as UI_Auth
+    component "Admin UI"         as UI_Admin
+  }
+
+  ' --- BUSINESS LAYER ---
+  package "Business Layer\n(Spring Services)" as Services {
+    component "Course Service"          as S_Course
+    component "Challenge Service"       as S_Challenge
+    component "E-Commerce Service"      as S_Shop
+    component "Forum Service"           as S_Forum
+    component "User & Auth Service"     as S_User
+    component "Admin Service"           as S_Admin
+  }
+
+  ' --- DATA ACCESS LAYER ---
+  package "Data Access Layer\n(Spring Data JPA)" as Repo {
+    component "Course Repository"       as R_Course
+    component "Challenge Repository"    as R_Challenge
+    component "Order/Product Repository" as R_Shop
+    component "Forum Repository"        as R_Forum
+    component "User Repository"         as R_User
+    component "Audit Repository"        as R_Audit
+  }
+
+  ' --- CROSS-CUTTING ---
+  package "Cross-Cutting Concerns" as Cross {
+    component "Security Config"      as C_Security
+    component "Validation"           as C_Validation
+    component "Logging/Monitoring"   as C_Logging
+  }
+}
+
+' ===== EXTERNAL SYSTEMS =====
+database "MariaDB 11" as DB
+cloud "Payment Gateway" as Payment
+cloud "Email Service" as Email
+
+' ===== ACTOR → UI =====
+Student   --> UI_Course
+Student   --> UI_Challenge
+Student   --> UI_Shop
+Student   --> UI_Forum
+Student   --> UI_Auth
+
+Instructor --> UI_Course
+Instructor --> UI_Challenge
+Instructor --> UI_Forum
+Instructor --> UI_Auth
+
+Admin --> UI_Admin
+
+' ===== UI → SERVICES =====
+UI_Course     --> S_Course
+UI_Challenge  --> S_Challenge
+UI_Shop       --> S_Shop
+UI_Forum      --> S_Forum
+UI_Auth       --> S_User
+UI_Admin      --> S_Admin
+
+' ===== SERVICES → REPOSITORIES =====
+S_Course      --> R_Course
+S_Challenge   --> R_Challenge
+S_Shop        --> R_Shop
+S_Forum       --> R_Forum
+S_User        --> R_User
+S_Admin       --> R_Audit
+
+' ===== REPOSITORIES → DATABASE =====
+R_Course      --> DB
+R_Challenge   --> DB
+R_Shop        --> DB
+R_Forum       --> DB
+R_User        --> DB
+R_Audit       --> DB
+
+' ===== SERVICES → EXTERNAL SYSTEMS =====
+S_Shop        --> Payment
+S_User        --> Email
+S_Admin       --> Email
+
+' ===== CROSS-CUTTING =====
+C_Security    ..> UI_Auth
+C_Security    ..> S_User
+C_Security    ..> S_Admin
+
+C_Validation  ..> S_Course
+C_Validation  ..> S_Challenge
+C_Validation  ..> S_Shop
+C_Validation  ..> S_Forum
+C_Validation  ..> S_User
+
+C_Logging     ..> S_Course
+C_Logging     ..> S_Challenge
+C_Logging     ..> S_Shop
+C_Logging     ..> S_Forum
+C_Logging     ..> S_User
+C_Logging     ..> S_Admin
+
+@enduml

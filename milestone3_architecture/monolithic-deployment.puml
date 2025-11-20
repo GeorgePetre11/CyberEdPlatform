@@ -1,0 +1,42 @@
+@startuml
+title CyberEd Platform - Architecture 1: Monolithic Deployment Diagram
+
+skinparam nodesep 60
+skinparam ranksep 60
+skinparam packageStyle rectangle
+
+left to right direction
+
+' ===== ACTORS / CLIENT SIDE =====
+actor "Student" as Student
+actor "Instructor" as Instructor
+actor "Administrator" as Admin
+
+node "Client Device\n(PC / Laptop)" as Client {
+  artifact "Web Browser\n(HTTPS)" as Browser
+}
+
+Student --> Browser
+Instructor --> Browser
+Admin --> Browser
+
+' ===== SERVER SIDE INFRASTRUCTURE =====
+node "Data Center / Cloud Environment" as DC {
+
+  node "Application Server\n(Docker Host / VM)" as AppHost {
+    node "CyberEd Monolithic Container\n(Docker)" as AppContainer {
+      artifact "cybered-platform.jar\n(Spring Boot 3.4.5 + Thymeleaf)" as MonolithApp
+    }
+  }
+
+  node "Database Server" as DBHost {
+    database "MariaDB 11\n(cybered_db)" as DB
+  }
+
+}
+
+' ===== NETWORKING =====
+Browser --> AppHost : HTTPS\n(443)
+AppContainer --> DB : JDBC\n(port 3306)
+
+@enduml
