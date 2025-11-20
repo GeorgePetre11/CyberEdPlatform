@@ -1,12 +1,9 @@
 # CyberEd Platform - Architecture Analysis
 
-**Course:** Software Design Techniques  
 **Team Members:**
 - Petre George-Alexandru, group 1241EB
 - Ionescu Rares-Andrei, group 1241EB
 - Leonte Robert, group 1241EB
-
-**Date:** November 20, 2025
 
 ---
 
@@ -52,38 +49,59 @@ All layers execute within the same monolithic process, making internal calls lig
 
 ### Advantages
 
-Simple to Develop and Maintain in Early Stages - 
-A single codebase allows developers to work without the complexity of distributed systems or remote service coordination.
+**Simple Development & Deployment**
+- Single codebase is easy to understand
+- Fewer moving parts compared to distributed systems
+- Fast onboarding for new developers
 
-Straightforward Deployment Pipeline - 
-One application artifact (JAR/Docker image) is deployed at once, reducing operational overhead.
+**High Performance (Low Latency)**
+- All calls are in-process, not over the network
+- No serialization/deserialization overhead
+- Fewer external dependencies to slow requests
 
-Highly Efficient Internal Communication - 
-All components call each other using in-process method calls—faster than network-based communication.
+**Strong Data Consistency**
+- Single database ensures ACID transactions
+- No distributed consistency problems
+- Easier to enforce relational constraints
 
-Unified Data Model - 
-The entire application shares one schema and transaction boundary, eliminating data consistency issues across services.
+**Simplified Testing & Debugging**
+- One environment to test, not multiple services
+- Logs and errors are centralized
+- Easier to reproduce bugs locally
 
-Easier for Small Teams - 
-A monolith lowers architectural overhead and is manageable even with limited development resources.
+**Cost-Effective for Small Teams**
+- Minimal infrastructure required
+- No orchestration tools (K8s, service mesh, etc.)
+- Cheaper hosting and maintenance
 
 ### Disadvantages
 
-Limited Scalability Options - 
-Scaling requires replicating the entire application instance, even if only one component (e.g., challenges or forum) needs more capacity.
+**Limited Scalability**
+- Must scale entire application, not individual modules
+- More expensive as load increases
+- Heavy features slow down the whole system
 
-Tight Coupling Between Modules - 
-Changes in one area can indirectly affect others, making large-scale modifications more error-prone.
+**Tight Coupling Between Components**
+- Hard to modify one module without impacting others
+- Risk of regressions grows with size
+- Requires strong internal boundaries to stay maintainable
 
-Slower Build and Deployment Times as the System Grows - 
-As the codebase expands, compiling, testing, and deploying the entire monolith becomes increasingly time-consuming.
+**Slower Development as Codebase Grows**
+- Longer build and deployment times
+- Harder to keep the architecture clean
+- More merge conflicts and coordination overhead
 
-Reduced Fault Isolation - 
-A failure in one module (e.g., a bug in the shop system) can impact the entire application runtime.
+**Reduced Fault Isolation**
+- One failing component can crash the entire application
+- Memory leaks or high CPU in one module affects all
+- No graceful degradation across features
 
-Harder to Adopt New Technologies - 
-Rewriting one part of the system in a different language or framework requires modifying the entire monolith.
+**Limited Technology Flexibility**
+- Whole system locked into one tech stack
+- Harder to rewrite or upgrade individual parts
+- Difficult to adopt new frameworks without major refactor
 
+  
 ### Suitability for CyberEd Platform
 
 The monolithic architecture is well-suited for early-stage development of the CyberEd Platform, especially given the integrated nature of the system:
@@ -190,37 +208,31 @@ Key components:
 - Each service scales independently based on load
 - Challenge Service can scale during peak quiz times
 - Shopping Service scales during sales periods
-- Optimized resource utilization
 
 **Technology Flexibility**
 - Challenge Service uses MongoDB for flexible schema
 - Other services use PostgreSQL for relational data
-- Redis for high-performance cart caching
 - Choose best tool for each job
 
 **Independent Deployment**
 - Deploy services without affecting others
 - Faster release cycles (weekly vs monthly)
-- Reduced deployment risk
 - Easy rollback of individual services
 
 **Team Autonomy**
 - Teams own services end-to-end
 - Parallel development possible
 - Clear service boundaries
-- Reduced coordination overhead
 
 **Fault Isolation**
 - Failure in Forum Service doesn't crash Shopping
 - Circuit breakers prevent cascading failures
-- Graceful degradation possible
 - Better overall system resilience
 
 **Focused Codebase**
 - Smaller, more maintainable codebases per service
 - Easier to understand and modify
 - Faster onboarding for new developers
-- Reduced cognitive load
 
 ### Disadvantages
 
@@ -228,13 +240,11 @@ Key components:
 - 6+ services to deploy and monitor
 - Requires container orchestration (Kubernetes)
 - Complex logging and tracing across services
-- Need for dedicated DevOps expertise
 
 **Network Latency**
 - Service-to-service communication adds overhead
-- Shopping cart checkout: 3 network calls (User → Course → Purchase)
+- Shopping cart checkout: 3 network calls (User -> Course -> Purchase)
 - Response time: 200-400ms vs 50-100ms for monolithic
-- Network failures must be handled
 
 **Data Consistency Challenges**
 - No distributed transactions across services
@@ -246,7 +256,6 @@ Key components:
 - Integration testing requires all services running
 - Complex test data setup across multiple databases
 - End-to-end tests are fragile and slow
-- Mocking service dependencies is error-prone
 
 **Infrastructure Costs**
 - Minimum 6 services + API Gateway + Message Queue
@@ -258,13 +267,7 @@ Key components:
 - Boilerplate code for each service (API, auth, logging)
 - Service discovery and configuration management
 - API versioning and backward compatibility
-- Distributed debugging is difficult
 
-**Distributed System Complexity**
-- Network partitions and timeouts
-- Idempotency requirements for retry logic
-- Distributed tracing needed for debugging
-- CAP theorem tradeoffs
 
 ### Suitability for CyberEd Platform
 
@@ -405,7 +408,6 @@ Course purchase flow:
 
 **Extensibility**
 - Easy to add new features
-- A/B testing support
 - Gradual feature rollout
 
 ### Disadvantages
@@ -435,15 +437,6 @@ Course purchase flow:
 - All consumers must be idempotent
 - Complex deduplication logic required
 
-**Schema Evolution**
-- Breaking changes affect multiple consumers
-- Version management complexity
-- Coordination overhead between teams
-
-**Testing Complexity**
-- Async testing challenges
-- Complex test setup requirements
-- Timing-dependent, flaky tests
 
 ### Suitability for CyberEd Platform
 
