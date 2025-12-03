@@ -1,0 +1,63 @@
+services:
+  # User Service
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    networks:
+      - cybered-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/api/users/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  # Course Service
+  course-service:
+    build:
+      context: ./course-service
+      dockerfile: Dockerfile
+    container_name: course-service
+    ports:
+      - "8082:8082"
+    networks:
+      - cybered-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/api/courses/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  # Order Service
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "8083:8083"
+    networks:
+      - cybered-network
+    depends_on:
+      - user-service
+      - course-service
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8083/api/orders/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - USER_SERVICE_URL=http://user-service:8081
+      - COURSE_SERVICE_URL=http://course-service:8082
+
+networks:
+  cybered-network:
+    driver: bridge
