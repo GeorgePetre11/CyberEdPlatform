@@ -3,15 +3,17 @@
 ## 1. Start Services
 
 ```bash
-cd CyberEdPlatform-Microservices
-docker-compose up --build
+cd CyberEdPlatform
+docker-compose up --build -d
 ```
 
-Wait for all services to start (about 2-3 minutes). You should see:
+Wait for all services to start (about 3-4 minutes). You should see:
 ```
 user-service     | User Service is running on port 8081
 course-service   | Course Service is running on port 8082
 order-service    | Order Service is running on port 8083
+forum-service    | Forum Service is running on port 8084
+postgres-db      | database system is ready to accept connections
 ```
 
 ## 2. Verify Services
@@ -25,6 +27,9 @@ curl http://localhost:8082/api/courses/health
 
 # Order Service
 curl http://localhost:8083/api/orders/health
+
+# Forum Service
+curl http://localhost:8084/api/forum/health
 ```
 
 ## 3. Quick Test
@@ -42,18 +47,33 @@ curl http://localhost:8082/api/courses
 curl -X POST http://localhost:8083/api/orders/checkout \
   -H "Content-Type: application/json" \
   -d '{"userId":2,"courseId":1}'
+
+# Create a forum post
+curl -X POST http://localhost:8084/api/forum/posts \
+  -H "Content-Type: application/json" \
+  -d '{"userId":2,"title":"My First Post","content":"Hello from the forum!"}'
+
+# Add a comment
+curl -X POST http://localhost:8084/api/forum/comments \
+  -H "Content-Type: application/json" \
+  -d '{"userId":1,"postId":1,"content":"Welcome to the forum!"}'
+
+# View all posts
+curl http://localhost:8084/api/forum/posts
 ```
 
 ## 4. Test with Postman
-
-1. Open Postman
-2. Import `postman/CyberEd-Microservices.postman_collection.json`
-3. Run the collection
-
-## 5. Stop Services
-
+**Services won't start:**
 ```bash
-docker-compose down
+# Check if ports are in use
+lsof -i :8081
+lsof -i :8082
+lsof -i :8083
+lsof -i :8084
+lsof -i :5432
+
+# Kill conflicting processes
+kill -9 <PID>
 ```
 
 ## Troubleshooting
@@ -73,11 +93,13 @@ kill -9 <PID>
 ```bash
 docker-compose down
 docker-compose up --build
-```
-
 **View logs:**
 ```bash
 docker logs user-service
 docker logs course-service
+docker logs order-service
+docker logs forum-service
+docker logs postgres-db
+```ker logs course-service
 docker logs order-service
 ```
