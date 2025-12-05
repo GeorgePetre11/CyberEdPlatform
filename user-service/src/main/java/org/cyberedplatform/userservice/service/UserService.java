@@ -21,7 +21,6 @@ public class UserService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // Register new user
     public UserDTO registerUser(String username, String password) {
         if (userRepository.existsByUsername(username)) {
             throw new RuntimeException("Username already exists");
@@ -36,7 +35,6 @@ public class UserService {
         return convertToDTO(savedUser);
     }
 
-    // Login user
     public UserDTO loginUser(String username, String password) {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
@@ -51,29 +49,24 @@ public class UserService {
         return convertToDTO(user);
     }
 
-    // Get user by ID
     public Optional<UserDTO> getUserById(Long id) {
         return userRepository.findById(id).map(this::convertToDTO);
     }
 
-    // Get all users
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Delete user
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
 
-    // Convert User to UserDTO (hide password)
     private UserDTO convertToDTO(User user) {
         return new UserDTO(user.getId(), user.getUsername(), user.getRoles());
     }
 
-    // Create admin user on startup
     public void createAdminUser() {
         if (!userRepository.existsByUsername("admin")) {
             User admin = new User();
@@ -81,7 +74,7 @@ public class UserService {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRoles(Set.of(Role.ROLE_ADMIN, Role.ROLE_USER));
             userRepository.save(admin);
-            System.out.println("✅ Admin user created: admin / admin123");
+            System.out.println("Admin user created: admin / admin123");
         }
     }
 }

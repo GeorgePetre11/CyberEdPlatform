@@ -15,7 +15,6 @@ public class CourseService {
     @Autowired
     private CourseRepository courseRepository;
 
-    // Create course
     @Transactional
     public Course createCourse(String title, String description, double price, int quantity) {
         if (courseRepository.existsByTitle(title)) {
@@ -26,17 +25,14 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
-    // Get all courses
     public List<Course> getAllCourses() {
         return courseRepository.findAll();
     }
 
-    // Get course by ID
     public Optional<Course> getCourseById(Long id) {
         return courseRepository.findById(id);
     }
 
-    // Update course
     @Transactional
     public Course updateCourse(Long id, String title, String description, double price, int quantity) {
         Course course = courseRepository.findById(id)
@@ -50,7 +46,6 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
-    // Delete course
     @Transactional
     public void deleteCourse(Long id) {
         if (!courseRepository.existsById(id)) {
@@ -59,7 +54,6 @@ public class CourseService {
         courseRepository.deleteById(id);
     }
 
-    // Update inventory (for Order Service)
     @Transactional
     public Course updateInventory(Long id, int quantityChange) {
         Course course = courseRepository.findById(id)
