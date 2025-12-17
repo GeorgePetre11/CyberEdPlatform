@@ -1,0 +1,33 @@
+# Compiled class files
+*.class
+target/
+*/target/
+
+# Log files
+*.log
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Docker
+*.env
+
+# Spring Boot
+HELP.md
+
+# H2 Database files
+*.db
+*.trace.db
