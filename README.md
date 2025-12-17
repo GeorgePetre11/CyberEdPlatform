@@ -1,30 +1,26 @@
 # CyberEdPlatform - Milestone 5: Microservices with Message Queue & CI/CD
 
-An educational platform built with Spring Boot microservices architecture, featuring **RabbitMQ message queue integration** for asynchronous communication and a **GitHub Actions CI/CD pipeline** for automated builds and deployments.
+An educational platform built with Spring Boot microservices architecture, featuring RabbitMQ message queue integration for asynchronous communication and a GitHub Actions CI/CD pipeline for automated builds and deployments.
 
----
-
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### Microservices (4 Services)
-1. **User Service** (Port 8081) - User authentication and management
-2. **Course Service** (Port 8082) - Course catalog and inventory
-3. **Order Service** (Port 8083) - Order processing and checkout
-4. **Forum Service** (Port 8084) - Discussion forums with PostgreSQL
+1. User Service (Port 8081) - User authentication and management
+2. Course Service (Port 8082) - Course catalog and inventory
+3. Order Service (Port 8083) - Order processing and checkout
+4. Forum Service (Port 8084) - Discussion forums with PostgreSQL
 
 ### Infrastructure Services
-- **RabbitMQ** (Ports 5672, 15672) - Message broker for async communication
-- **PostgreSQL** (Port 5432) - Database for Forum Service
+- RabbitMQ (Ports 5672, 15672) - Message broker for async communication
+- PostgreSQL (Port 5432) - Database for Forum Service
 
----
-
-## 📨 Message Queue Integration
+## Message Queue Integration
 
 ### Why RabbitMQ?
-- **Decoupling**: Order Service no longer waits for Course Service to update inventory
-- **Fault Tolerance**: If Course Service is down, messages are queued and processed when it recovers
-- **Scalability**: Can add multiple Course Service instances to process inventory updates in parallel
-- **Reliability**: Durable queues ensure messages aren't lost
+- Decoupling: Order Service no longer waits for Course Service to update inventory
+- Fault Tolerance: If Course Service is down, messages are queued and processed when it recovers
+- Scalability: Can add multiple Course Service instances to process inventory updates in parallel
+- Reliability: Durable queues ensure messages aren't lost
 
 ### Architecture Flow
 ```
@@ -32,15 +28,15 @@ Order Service → RabbitMQ (order.exchange) → Course Service
    (Publisher)      [Queue: order.inventory.queue]     (Consumer)
 ```
 
-**What happens when you place an order:**
+When you place an order:
 1. Order Service validates user and course availability
 2. Order is saved to database
-3. `OrderPlacedEvent` is published to RabbitMQ asynchronously
-4. Order Service immediately returns response (fast!)
+3. OrderPlacedEvent is published to RabbitMQ asynchronously
+4. Order Service immediately returns response
 5. Course Service consumes event from queue and updates inventory
 6. If Course Service is down, message waits in queue
 
-**Message Format (OrderPlacedEvent):**
+Message Format (OrderPlacedEvent):
 ```json
 {
   "orderId": 1,
@@ -60,9 +56,7 @@ Username: guest
 Password: guest
 ```
 
----
-
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### 1. Start All Services
 
@@ -71,7 +65,7 @@ cd CyberEdPlatform-milestone4-microservices
 docker-compose up --build -d
 ```
 
-Wait for all services to start (about 4-5 minutes). You should see:
+Wait for all services to start (approximately 4-5 minutes). You should see:
 ```
 rabbitmq         | RabbitMQ is running
 user-service     | User Service is running on port 8081
@@ -121,10 +115,10 @@ curl http://localhost:8082/api/courses
 # Navigate to Queues → order.inventory.queue
 ```
 
-**Expected Behavior:**
+Expected Behavior:
 - Order is created instantly (Order Service doesn't wait)
 - Inventory updates asynchronously within 1-2 seconds
-- Check logs: `docker logs course-service` to see message consumption
+- Check logs using: docker logs course-service to see message consumption
 
 ### 4. Test Forum Service
 
@@ -146,39 +140,37 @@ curl http://localhost:8084/api/forum/posts
 ### 5. Test with Postman
 Import the Postman collection from `postman/CyberEd-Microservices.postman_collection.json`
 
----
-
-## 🔄 CI/CD Pipeline (GitHub Actions)
+## CI/CD Pipeline (GitHub Actions)
 
 ### What It Does
-The CI/CD pipeline automatically:
-1. **Builds** all 4 microservices with Maven
-2. **Runs tests** for each service
-3. **Builds Docker images** for all services
-4. **Deploys** to local Docker environment
-5. **Runs health checks** on all services
-6. **Executes integration tests** (user registration, course retrieval)
+The CI/CD pipeline automatically performs the following actions:
+1. Builds all 4 microservices with Maven
+2. Runs tests for each service
+3. Builds Docker images for all services
+4. Deploys to local Docker environment
+5. Runs health checks on all services
+6. Executes integration tests (user registration, course retrieval)
 
 ### Pipeline Configuration
 Located at: `.github/workflows/ci-cd.yml`
 
-**Triggers:**
+Triggers:
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop`
 
-**Pipeline Stages:**
+Pipeline Stages:
 
 | Stage | Actions |
 |-------|---------|
-| **Build & Test** | Maven clean, package, and unit tests for all services |
-| **Docker Build** | Build all Docker images using docker-compose |
-| **Deploy** | Start services with docker-compose up |
-| **Health Checks** | Verify all services are responsive |
-| **Integration Tests** | Test user registration, course API |
+| Build & Test | Maven clean, package, and unit tests for all services |
+| Docker Build | Build all Docker images using docker-compose |
+| Deploy | Start services with docker-compose up |
+| Health Checks | Verify all services are responsive |
+| Integration Tests | Test user registration, course API |
 
 ### How to Use
 
-**Locally (simulate CI/CD):**
+Locally (simulate CI/CD):
 ```bash
 # Run the same steps as GitHub Actions
 mvn clean package -f user-service/pom.xml
@@ -199,21 +191,19 @@ curl http://localhost:8083/api/orders/health
 curl http://localhost:8084/api/forum/health
 ```
 
-**On GitHub:**
+On GitHub:
 1. Push code to your repository
 2. GitHub Actions automatically runs the pipeline
 3. View results at: `https://github.com/<your-username>/<repo>/actions`
-4. Green checkmark = All tests passed ✅
-5. Red X = Build/test failure ❌
+4. Green checkmark = All tests passed
+5. Red X = Build/test failure
 
-**Optional: Push to Docker Hub**
+Optional: Push to Docker Hub
 Uncomment the Docker Hub section in `.github/workflows/ci-cd.yml` and add these secrets to your GitHub repository:
 - `DOCKERHUB_USERNAME`
 - `DOCKERHUB_TOKEN`
 
----
-
-## 📊 Technology Stack
+## Technology Stack
 
 | Component | Technology |
 |-----------|-----------|
@@ -226,9 +216,7 @@ Uncomment the Docker Hub section in `.github/workflows/ci-cd.yml` and add these 
 | CI/CD | GitHub Actions |
 | API Testing | Postman |
 
----
-
-## 🧪 Troubleshooting
+## Troubleshooting
 
 ### Services won't start
 ```bash
@@ -283,25 +271,21 @@ docker system prune -a  # Remove all unused images
 docker-compose up --build -d
 ```
 
----
-
-## 🎯 Benefits Demonstrated
+## Benefits Demonstrated
 
 ### Message Queue Benefits
-✅ **Decoupling**: Order Service doesn't wait for Course Service  
-✅ **Fault Tolerance**: Messages persist if Course Service crashes  
-✅ **Scalability**: Can scale Course Service horizontally  
-✅ **Async Processing**: Faster response times for users  
+- Decoupling: Order Service doesn't wait for Course Service
+- Fault Tolerance: Messages persist if Course Service crashes
+- Scalability: Can scale Course Service horizontally
+- Async Processing: Faster response times for users
 
 ### CI/CD Pipeline Benefits
-✅ **Automation**: No manual build/test/deploy steps  
-✅ **Quality Assurance**: Automated tests catch bugs early  
-✅ **Consistency**: Same build process every time  
-✅ **Fast Feedback**: Know if code breaks within minutes  
+- Automation: No manual build/test/deploy steps
+- Quality Assurance: Automated tests catch bugs early
+- Consistency: Same build process every time
+- Fast Feedback: Know if code breaks within minutes
 
----
-
-## 📚 Project Structure
+## Project Structure
 
 ```
 CyberEdPlatform-milestone4-microservices/
@@ -316,22 +300,18 @@ CyberEdPlatform-milestone4-microservices/
 └── README.md                        # This file
 ```
 
----
-
-## 📖 Additional Resources
+## Additional Resources
 
 - [RabbitMQ Management UI](http://localhost:15672) (guest/guest)
 - [Spring AMQP Documentation](https://spring.io/projects/spring-amqp)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - Postman Collection: `postman/CyberEd-Microservices.postman_collection.json`
 
----
-
-## 👨‍💻 Development Workflow
+## Development Workflow
 
 1. Make code changes in any service
 2. Commit and push to GitHub
 3. GitHub Actions runs automatically
 4. Check pipeline results in Actions tab
-5. If green ✅, code is ready for review/merge
-6. If red ❌, fix issues and push again
+5. If tests pass, code is ready for review/merge
+6. If tests fail, fix issues and push again
