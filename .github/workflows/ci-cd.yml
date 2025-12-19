@@ -28,7 +28,7 @@ jobs:
       
     - name: Build Course Service
       run: |
-        cd course-serviceok
+        cd course-service
         mvn clean package -DskipTests
 
     - name: Build Order Service
