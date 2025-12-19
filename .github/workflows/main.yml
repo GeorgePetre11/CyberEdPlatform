@@ -1,0 +1,119 @@
+name: CyberEdPlatform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build User Service
+      run: |
+        cd user-service
+        mvn clean package -DskipTests
+      
+    - name: Build Course Service
+      run: |
+        cd course-service
+        mvn clean package -DskipTests
+
+    - name: Build Order Service
+      run: |
+        cd order-service
+        mvn clean package -DskipTests
+
+    - name: Build Forum Service
+      run: |
+        cd forum-service
+        mvn clean package -DskipTests
+
+    - name: Run User Service Tests
+      run: |
+        cd user-service
+        mvn test
+
+    - name: Run Course Service Tests
+      run: |
+        cd course-service
+        mvn test
+
+    - name: Run Order Service Tests
+      run: |
+        cd order-service
+        mvn test
+
+    - name: Run Forum Service Tests
+      run: |
+        cd forum-service
+        mvn test
+
+  docker-build-and-deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker images
+      run: |
+        docker-compose build
+
+    - name: Start services with Docker Compose
+      run: |
+        docker-compose up -d
+        echo "Waiting for services to be healthy..."
+        sleep 60
+
+    - name: Check service health
+      run: |
+        echo "Checking User Service..."
+        curl --fail --retry 5 --retry-delay 10 http://localhost:8081/api/users/health || exit 1
+        
+        echo "Checking Course Service..."
+        curl --fail --retry 5 --retry-delay 10 http://localhost:8082/api/courses/health || exit 1
+        
+        echo "Checking Order Service..."
+        curl --fail --retry 5 --retry-delay 10 http://localhost:8083/api/orders/health || exit 1
+        
+        echo "Checking Forum Service..."
+        curl --fail --retry 5 --retry-delay 10 http://localhost:8084/api/forum/health || exit 1
+
+    - name: Run integration tests
+      run: |
+        echo "Testing user registration..."
+        curl -X POST http://localhost:8081/api/users/register \
+          -H "Content-Type: application/json" \
+          -d '{"username":"testuser","password":"test123"}' || exit 1
+        
+        echo "Testing course retrieval..."
+        curl --fail http://localhost:8082/api/courses || exit 1
+        
+        echo "All integration tests passed!"
+
+    - name: View service logs on failure
+      if: failure()
+      run: |
+        docker-compose logs
+
+    - name: Stop Docker Compose
+      if: always()
+      run: |
+        docker-compose down -v
