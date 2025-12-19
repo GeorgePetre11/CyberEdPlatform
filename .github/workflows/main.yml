@@ -2,9 +2,9 @@ name: CyberEdPlatform CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, milestone5-message-queue-cicd ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, milestone5-message-queue-cicd ]
 
 jobs:
   build-and-test:
