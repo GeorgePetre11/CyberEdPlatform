@@ -28,7 +28,7 @@ jobs:
       
     - name: Build Course Service
       run: |
-        cd course-service
+        cd course-serviceok
         mvn clean package -DskipTests
 
     - name: Build Order Service
@@ -74,11 +74,11 @@ jobs:
 
     - name: Build Docker images
       run: |
-        docker-compose build
+        docker compose build
 
     - name: Start services with Docker Compose
       run: |
-        docker-compose up -d
+        docker compose up -d
         echo "Waiting for services to be healthy..."
         sleep 60
 
@@ -111,9 +111,9 @@ jobs:
     - name: View service logs on failure
       if: failure()
       run: |
-        docker-compose logs
+        docker compose logs
 
     - name: Stop Docker Compose
       if: always()
       run: |
-        docker-compose down -v
+        docker compose down -v
