@@ -23,42 +23,42 @@ jobs:
 
     - name: Build User Service
       run: |
-        cd user-service
+        cd CyberEdPlatform-milestone4-microservices/user-service
         mvn clean package -DskipTests
       
     - name: Build Course Service
       run: |
-        cd course-service
+        cd CyberEdPlatform-milestone4-microservices/course-service
         mvn clean package -DskipTests
 
     - name: Build Order Service
       run: |
-        cd order-service
+        cd CyberEdPlatform-milestone4-microservices/order-service
         mvn clean package -DskipTests
 
     - name: Build Forum Service
       run: |
-        cd forum-service
+        cd CyberEdPlatform-milestone4-microservices/forum-service
         mvn clean package -DskipTests
 
     - name: Run User Service Tests
       run: |
-        cd user-service
+        cd CyberEdPlatform-milestone4-microservices/user-service
         mvn test
 
     - name: Run Course Service Tests
       run: |
-        cd course-service
+        cd CyberEdPlatform-milestone4-microservices/course-service
         mvn test
 
     - name: Run Order Service Tests
       run: |
-        cd order-service
+        cd CyberEdPlatform-milestone4-microservices/order-service
         mvn test
 
     - name: Run Forum Service Tests
       run: |
-        cd forum-service
+        cd CyberEdPlatform-milestone4-microservices/forum-service
         mvn test
 
   docker-build-and-deploy:
